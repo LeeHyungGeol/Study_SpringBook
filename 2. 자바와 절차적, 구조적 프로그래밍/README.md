@@ -17,9 +17,7 @@ JRE는 ***자바 프로그램 실행기***인 **java.exe**를 포함한다.
 * JVM : Java Virtual Machine / 자바 가상 기계 / 가상의 컴퓨터
   
 
-[ **java 소스 작성 부터 프로그램 실행까지의 순서** ]
-![java 소스 작성 부터 프로그램 실행까지의 순서](https://user-images.githubusercontent.com/56071088/107841747-e5d61500-6e00-11eb-82f7-7e4123b7c103.PNG)
-
+<img src="https://user-images.githubusercontent.com/56071088/107841747-e5d61500-6e00-11eb-82f7-7e4123b7c103.PNG"  width="480" height="350">
 
 [ **객체 지향 프로그램의 메모리 사용 방식** ]
 ![객체 지향 프로그램의 메모리 사용 방식](https://user-images.githubusercontent.com/56071088/107841996-32baeb00-6e03-11eb-9256-1d351c39dc7c.png)
