@@ -101,7 +101,7 @@ Mouse mickey = new Mouse();
 
 [ **상속과 데이터 저장 영역** ]
 
-![상속과 데이터 저장 영역](https://user-images.githubusercontent.com/56071088/107868112-acff7400-6ec4-11eb-81cc-2f68ab4210d4.PNG)
+<img src="https://user-images.githubusercontent.com/56071088/107868112-acff7400-6ec4-11eb-81cc-2f68ab4210d4.PNG"  width="450" height="350">
 
 Penguin pororo = new Penguin();
 Animal pingu = new Penguin();
