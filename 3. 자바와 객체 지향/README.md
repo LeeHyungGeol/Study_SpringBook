@@ -52,6 +52,7 @@ ex)
 객체 지향에서 추상화의 결과는 Class이다.
 
 [ **클래스 객체_참조_변수 = new 클래스();** ]
+
 <img src="https://user-images.githubusercontent.com/56071088/107867095-ff3b9780-6eba-11eb-865b-8e8380cd6187.png"  width="450" height="400">
 
 Mouse mickey = new Mouse();
@@ -99,6 +100,7 @@ Mouse mickey = new Mouse();
     * **인터페이스에 메서드가 적을수록 좋다.** -> ***ISP(인터페이스 분할 원칙)***
 
 [ **상속과 데이터 저장 영역** ]
+
 ![상속과 데이터 저장 영역](https://user-images.githubusercontent.com/56071088/107868112-acff7400-6ec4-11eb-81cc-2f68ab4210d4.PNG)
 
 Penguin pororo = new Penguin();
@@ -120,6 +122,7 @@ Animal pingu = new Penguin();
     * 인공위성에서 트럭에 적재된 운송물을 볼 때, 오버로딩(적재하기)된 경우는 옆으로 적대된 모든 적재물이 다 보인다.
 
 [ **다형성과 데이터 저장 영역**]
+
 <img src="https://user-images.githubusercontent.com/56071088/107868462-dec60a00-6ec7-11eb-9f18-84368cace438.png"  width="450" height="400">
 
 * **상위 클래스 타입의 객체 참조 변수를 사용하더라도 하위 클래스에서 오버라이딩(재정의)한 메서드가 호출된다.**
