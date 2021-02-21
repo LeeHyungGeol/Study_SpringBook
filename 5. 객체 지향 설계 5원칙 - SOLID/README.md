@@ -6,7 +6,7 @@
 
 * 응집도(Cohesion) : 하나의 모듈 내부에 존재하는 구성 요소들의 기능적 관련성
   *  응집도가 높은 모듈은 하나의 책임에 집중
-  *  재시용이나 기능의 수정, 유지보수가 용이하다.
+  *  재사용이나 기능의 수정, 유지보수가 용이하다.
 
 * 결합도(Coupling) : 모듈(Class) 간의 상호 의존 정도
   * 결합도가 낮으면 모듈 간의 상호 의존성이 낮아진다.
@@ -199,6 +199,7 @@ public class Galaxy implements SmartPhone, GalaxyFunction {
         return "connect complete!";
     }
 
+    @Override
     public String video() {
         return "play video";
     }
