@@ -221,11 +221,130 @@ public class Galaxy implements SmartPhone, GalaxyFunction {
 
 ex) DIP 적용 예시
 
-![DIP](https://user-images.githubusercontent.com/56071088/108606078-51207800-73fb-11eb-84d3-008062e64846.PNG)
+![DIP적용 후](https://user-images.githubusercontent.com/48685242/108036670-ddd5d980-707b-11eb-8485-e05e5eb32a67.jpg)
 
+* 자동차가 구체적인 타이어들(스노우, 일반, 광폭 타이어)이 아닌 ***추상화된 타이어 인터페이스에만 의존***하게 함으로써 스오우 타이어에서 다른 구체적인 타이어로 변경해도 자동차는 이제 그 영향을 받지 않은 형태로 구성된다.
+  
 ---
 
-## Spring과 SOLID
+# Spring과 SOLID
+
+![DIP](https://user-images.githubusercontent.com/56071088/108606078-51207800-73fb-11eb-84d3-008062e64846.PNG)
+
+## 1. 다형성의 실세계 비유 -> "역할과 구현을 분리"
+
+역할과 구현으로 구분하면, **유연해지며 변경이 용이해진다.**
+
+* **클라이언트(운전자)** 는 대상의 역할(인터페이스)만 알면 된다.
+* **클라이언트**는 **구현 대상의 내부 구조를 몰라도 되고, 변경되어도 영향을 받지 않는다.**
+* **클라이언트** 는 **구현 대상 자체를 변경**해도 영향을 받지 않는다.
+  
+## 2. 객체의 협력이라는 관계부터 생각
+
+* 혼자 있는 객체는 없다.
+* 수 많은 객체 클라이언트와 객체 서버는 서로 협력 관계를 가진다.
+    * 클라이언트: 요청, 서버: 응답
+
+## 3. 자바 언어의 다형성 적용
+
+* 자바의 오버라이딩(Overriding) 적용
+* 다형성으로 인터페이스(interface)를 구현한 객체를 **실행시점에 유연하게 변경 가능하다.**
+
+## 4. 다형성만으로는 부족하다 -> OCP, DIP에 위배
+
+<img src="https://user-images.githubusercontent.com/56071088/108619199-78605f00-7466-11eb-963d-ba8b73a10d49.PNG"  width="400" height="250">
+
+* **다형성 만으로는 구현 객체를 변경할 때 클라이언트 코드도 함께 변경된다.**
+
+```java
+public class MemberServiceImpl implements MemberService{
+    //private final MemberRepository memberRepository = new MemoryMemberRepository(); 
+    private final MemberRepository memberRepository = new JdbcMemberReposiroty();
+    //문제점 1 : DIP 위반 :추상(인터페이스) 뿐만 아니라 구체(구현) 클래스에도 의존하고 있다.
+    //문제점 2 : OCP 위반 :기능을 확장해서 변경하면, 클라이언트 코드에 영향을 준다! MemoryMemberRepository 를 JdbcMemberReposiroty 로 변경하는 순간 MemberServiceImpl 의 소스 코드도 함께 변경해야 한다!  
+}
+
+```
+
+## 5. Spring의 DI 컨테이너(AppConfig)
+
+**관심사의 분리(SoC)**
+
+* 기존에는 클라이언트가 의존하는 서버 구현 객체를 직접 생성하고, 실행하였다.
+*  AppConfig를 두어, 애플리케이션의 전체 동작 방식을 크게 사용 영역과 구성영역으로 나눈다.
+*  AppConfig는 애플리케이션의 전체 동작 방식을 구성(config)하기 위해, **구현 객체를 생성하고 연결**하는 책임을 가진다.
+* **클라이언트는 자신의 실행하는 역할만 수행하면 된다** -> 책임이 명확해졌다(SRP)
+
+ex) 관심사의 분리
+
+<img src="https://user-images.githubusercontent.com/56071088/108619797-87e1a700-746a-11eb-9fb3-c71c4b9e9d43.PNG"  width="480" height="330">
+
+```java
+public class OrderServiceImpl implements OrderService{
+    //"DIP 적용" : AppConfig 를 사용함으로써 구현체가 아닌 추상화(Interface)에만 의존하도록 만들었다.
+    private final MemberRepository memberRepository; //final 선언시, 기본으로 할당 또는 생성자를 통해 할당을 해야한다.
+    private final DiscountPolicy discountPolicy;
+}
+
+//애플리케이션 설정 정보, 구성 정보를 담당하는 파일이라는 뜻
+//애플리케이션에 대한 환경 구성을 한다. //DI 컨테이너
+//애플리케이션의 전체 동작 방식을 구성(config)하기 위해, 구현 객체를 생성하고, 연결하는 책임을 가지는 별도의 설정 클래스이다.
+@Configuration
+public class AppConfig { 
+    //AppConfig 를 보면 역할과 구현 클래스가 한눈에 들어온다.
+    //애플리케이션 전체 구성이 어떻게 되어있는지 빠르게 파악할 수 있다.
+    @Bean
+    public MemoryMemberRepository memberRepository() { //역할(추상화(Interface))에 대한 것과 그에 따른 구현이 한 눈에 보인다.
+        System.out.println("call AppConfig.memberRepository");
+        return new MemoryMemberRepository();
+    }
+
+    @Bean
+    public OrderService orderService() {//각각의 추상화(Interface)에 대한 역할들이 잘 들어나게 Refactoring 한다.
+        System.out.println("call AppConfig.orderService");
+        return new OrderServiceImpl(memberRepository(), discountPolicy()); 
+    }
+    
+    @Bean
+    public DiscountPolicy discountPolicy() {
+        //return new FixDiscountPolicy();
+        return new RateDiscountPolicy();
+    }
+}
+
+```
+
+* **SRP 단일 책임 원칙 적용**
+    * ***한 클래스는 하나의 책임만 가져야 한다.***
+    * SRP 단일 책임 원칙을 따르면서 ***관심사를 분리***함.
+    * **클라이언트 객체**는 ***실행하는 책임***만 담당
+    * **AppConfig**는 ***구현 객체를 생성하고 연결하는 책임***을 담당
+
+* **DIP 의존관계 역전 원칙 적용**
+  * ***추상화에 의존해야지, 구체화에 의존하면 안된다.***
+  * 클라이언트 코드(MemberServiceImpl)가 discountPolicy(추상화 인터페이스)에만 의존하도록 코드를 변경했다.
+  * AppConfig가 FixDiscountPolicy 객체 인스턴스를 클라이언트 코드 대신 생성해서 클라이언트 코드
+에 의존관계를 주입했다.  
+
+* **OCP 개방 폐쇄 원칙 적용**
+  * ***확장에는 열려 있으나 변경에는 닫혀 있어야 한다.***
+  * AppConfig가 FixDiscountPolicy에서 RateDiscountPolicy로 변경해서 클라이언트에 주입하므로 클라이언트 코드는 변경하지 않아도 된다.
+  * **소프트웨어 요소를 새롭게 확장해도 사용 역영의 변경은 닫혀 있다**
+ 
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+
 
 
 
