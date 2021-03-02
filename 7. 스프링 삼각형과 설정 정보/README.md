@@ -142,9 +142,9 @@ www.springframework.org/schema/beans/spring-beans.xsd">
 
 [ **BeanDefinition : 역할, AppConfig.xxxx : 구현** ]
 
-<img src="https://user-images.githubusercontent.com/56071088/109682595-e8d35280-7bc1-11eb-9071-ce295c6420f0.PNG"  width="400" height="200">
+<img src="https://user-images.githubusercontent.com/56071088/109682595-e8d35280-7bc1-11eb-9071-ce295c6420f0.PNG"  width="500" height="300">
 
-<img src="https://user-images.githubusercontent.com/56071088/109682813-1b7d4b00-7bc2-11eb-97fc-158c37ed757a.PNG"  width="400" height="250">
+<img src="https://user-images.githubusercontent.com/56071088/109682813-1b7d4b00-7bc2-11eb-97fc-158c37ed757a.PNG"  width="500" height="350">
 
 * AnnotationConfigApplicationContext는 AnnotatedBeanDefinitionReader 를 사용해서 AppConfig.class 를 읽고 BeanDefinition 을 생성한다.
 * GenericXmlApplicationContext는 XmlBeanDefinitionReader 를 사용해서 appConfig.xml 설정 정보를 읽고 BeanDefinition 을 생성한다.
