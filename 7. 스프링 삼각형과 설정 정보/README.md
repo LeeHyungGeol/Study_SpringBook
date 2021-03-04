@@ -67,6 +67,27 @@ public class AppConfig {
         return new RateDiscountPolicy();
     }
 }
+
+public class OrderApp {
+    public static void main(String[] args) {
+        // AppConfig appConfig = new AppConfig();
+        // MemberService memberService = appConfig.memberService();
+        // OrderService orderService = appConfig.orderService();
+        
+        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(AppConfig.class);
+        
+        MemberService memberService = applicationContext.getBean("memberService", MemberService.class);
+        OrderService orderService = applicationContext.getBean("orderService", OrderService.class);
+        
+        long memberId = 1L;
+        Member member = new Member(memberId, "memberA", Grade.VIP);
+        memberService.join(member);
+        
+        Order order = orderService.createOrder(memberId, "itemA", 10000);
+        
+        System.out.println("order = " + order);
+    }
+}
 ```
 
 * 관심사의 분리(SoC)를 이용하여 애플리케이션의 동작 방식을 사용 영역과 구성 영역으로 나눈다.
@@ -113,15 +134,13 @@ public class AppConfig {
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans http://
-www.springframework.org/schema/beans/spring-beans.xsd">
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
  
     <bean id="memberService" class="hello.core.member.MemberServiceImpl">
         <constructor-arg name="memberRepository" ref="memberRepository" />
     </bean>
     
-    <bean id="memberRepository"
-        class="hello.core.member.MemoryMemberRepository" />
+    <bean id="memberRepository" class="hello.core.member.MemoryMemberRepository" />
  
     <bean id="orderService" class="hello.core.order.OrderServiceImpl">
         <constructor-arg name="memberRepository" ref="memberRepository" />
@@ -140,6 +159,20 @@ www.springframework.org/schema/beans/spring-beans.xsd">
 - 스프링 컨테이너는 자바 코드인지, XML인지 몰라도 된다. 오직 BeanDefinition만 알면 된다.
 - **BeanDefinition 을 빈 설정 메타정보**라고 한다.
 
+BeanDefinition 정보
+
+* BeanClassName: 생성할 빈의 클래스 명(자바 설정 처럼 팩토리 역할의 빈을 사용하면 없음)
+
+* factoryBeanName: 팩토리 역할의 빈을 사용할 경우 이름, 예) appConfig
+* factoryMethodName: 빈을 생성할 팩토리 메서드 지정, 예) memberService
+* Scope: 싱글톤(기본값)
+* lazyInit: 스프링 컨테이너를 생성할 때 빈을 생성하는 것이 아니라, 실제 빈을 사용할 때 까지 최대한
+생성을 지연처리 하는지 여부
+* InitMethodName: 빈을 생성하고, 의존관계를 적용한 뒤에 호출되는 초기화 메서드 명
+* DestroyMethodName: 빈의 생명주기가 끝나서 제거하기 직전에 호출되는 메서드 명
+* Constructor arguments, Properties: 의존관계 주입에서 사용한다. (자바 설정 처럼 팩토리 역할
+의 빈을 사용하면 없음)
+
 [ **BeanDefinition : 역할, AppConfig.xxxx : 구현** ]
 
 <img src="https://user-images.githubusercontent.com/56071088/109682595-e8d35280-7bc1-11eb-9071-ce295c6420f0.PNG"  width="500" height="300">
@@ -148,7 +181,7 @@ www.springframework.org/schema/beans/spring-beans.xsd">
 
 * AnnotationConfigApplicationContext는 AnnotatedBeanDefinitionReader 를 사용해서 AppConfig.class 를 읽고 BeanDefinition 을 생성한다.
 * GenericXmlApplicationContext는 XmlBeanDefinitionReader 를 사용해서 appConfig.xml 설정 정보를 읽고 BeanDefinition 을 생성한다.
-* 새로운 형식의 설정 정보 ***AppCongig.xxxx***가 추가되면, ***XxxxBeanDefinitionReader***를 만들어서 ***BeanDefinition을 생성***하면 된다.
+* 새로운 형식의 설정 정보 ***AppCongig.xxxx***가 추가되면, ***XxxxBeanDefinitionReader***를 만들어서  appConfig.xxxx 설정 정보를 읽고 ***BeanDefinition을 생성***하면 된다.
 
 ```java
 
@@ -178,7 +211,168 @@ public class BeanDefinitionTest {
 }
 ```
 
-## 4. 다양한 의존관계 주입 방법
+## 4. 다양한 의존관계 주입 방법 - 생성자 주입을 선택하자!
+
+* 생성자 주입
+* 수정자 주입(setter 주입)
+* 필드 주입
+* 일반 메서드 주입
+
+Spring에는 다양한 의존관계 주입 방법이 있다. 이 책에서는 필드 주입, 속성을 통한 의존성 주입을 설명하였다. 하지만, 실무에서는 **스프링을 포함한 DI 프레임워크 대부분**이
+***생성자 주입을 권장***한다. 그 이유는 다음과 같다.
+
+**불변**
+* 대부분의 의존관계 주입은 한번 일어나면 애플리케이션 종료시점까지 의존관계를 변경할 일이 없다. 오히려 대부분의 의존관계는 애플리케이션 종료 전까지 변하면 안된다.(불변해야 한다.)
+
+* *수정자 주입*을 사용하면, setXxx 메서드를 ***public***으로 열어두어야 한다.
+  
+* **누군가 실수로 변경할 수 도 있고, 변경하면 안되는 메서드를 열어두는 것은 좋은 설계 방법이 아니다.**
+  
+* ***생성자 주입***은 **객체를 생성할 때 딱 1번만 호출**되므로 이후에 호출되는 일이 없다. 따라서 **불변하게 설계할 수 있다.**
+
+
+### 생성자 주입
+
+* 생성자를 통해서 의존 관계를 주입 받는 방법이다.
+  * 생성자 호출시점에 딱 1번만 호출되는 것이 보장된다.
+  * ***불변, 필수 의존관계***에 사용
+
+```java
+@Component
+public class OrderServiceImpl implements OrderService {
+    
+    //final 키워드 - 생성자에서 혹시라도 값이 설정되지 않는 오류를 컴파일 시점에 막아준다.
+    private final MemberRepository memberRepository;
+    private final DiscountPolicy discountPolicy;
+
+    @Autowired
+    public OrderServiceImpl(MemberRepository memberRepository, DiscountPolicy discountPolicy) {
+        this.memberRepository = memberRepository;
+        this.discountPolicy = discountPolicy;
+    }
+}
+```
+
+### 수정자 주입
+
+* setter라 불리는 필드의 값을 변경하는 수정자 메서드(속성 메서드)(property method)를 통해서 의존관계를 주입하는 방법이다.
+  * ***선택, 변경*** 가능성이 있는 의존관계에 사용
+  * 자바빈 프로퍼티 규약의 수정자 메서드 방식을 사용하는 방법이다.
+    * **자바빈 프로퍼티 규약** : 자바에서는 과거부터 필드의 값을 직접 변경하지 않고, setXxx, getXxx 라는 메서드를 통해서 값을 읽거나 수정하는 규칙
+
+```java
+@Component
+public class OrderServiceImpl implements OrderService {
+ 
+    private MemberRepository memberRepository;
+    private DiscountPolicy discountPolicy;
+ 
+    @Autowired
+    public void setMemberRepository(MemberRepository memberRepository) {
+        this.memberRepository = memberRepository;
+    }
+ 
+    @Autowired
+    public void setDiscountPolicy(DiscountPolicy discountPolicy) {
+        this.discountPolicy = discountPolicy;
+    }
+}
+```
+
+### 필드 주입
+
+* 필드에 바로 주입하는 방법
+  
+  * 코드가 간결해서 많은 개발자들을 유혹하지만 외부에서 변경이 불가능해서 테스트 하기 힘들다는 치명적인 단점이 있다.
+  
+  * DI 프레임워크가 없으면 아무것도 할 수 없다. ***사용하지 말자!***
+    * 애플리케이션의 실제 코드와 관계 없는 테스트 코드 혹은
+    * 스프링 설정을 목적으로 하는 @Configuration 같은 곳에서만 특별한 용도로 사용
+
+```java
+@Component
+public class OrderServiceImpl implements OrderService {
+    @Autowired
+    private MemberRepository memberRepository;
+    @Autowired
+    private DiscountPolicy discountPolicy;
+}
+```
+
+### 일반 메서드 주입
+
+* 일반 메서드를 통해서 의존 관계를 주입하는 방법
+  
+  * 한번에 여러 필드를 주입 받을 수 있다.
+  * 일반적으로 잘 사용하지 않는다.
+  
+```java
+@Component
+public class OrderServiceImpl implements OrderService {
+
+    private MemberRepository memberRepository;
+    private DiscountPolicy discountPolicy;
+
+    @Autowired
+    public void init(MemberRepository memberRepository, DiscountPolicy discountPolicy) {
+        this.memberRepository = memberRepository;
+        this.discountPolicy = discountPolicy;
+    }
+}
+```
+
+## 옵션 처리 - @Autowired(required=false), @Nullable, Optional<>
+
+주입할 스프링 빈이 없어도 동작해야 할 때가 있다.
+
+@Autowired만 사용하면, required옵션 값이 true로 설정되어 있어서 자동 주입 대상이 없으면 오류가 발생한다.
+
+* @Autowired(required=false) : 자동 주입할 대상이 없으면 ***수정자 메서드*** **자체가 호출 안됨.**
+  
+* org.springframework.lang.***@Nullable*** : 자동 주입할 대상이 없으면 **null값이 입력**
+* ***Optional<>*** : 자동 주입할 대상이 없으면 **Optional.empty**가 입력된다.
+* : ***@Nullable, Optional<>*** 은 **스프링 전반에 걸쳐서 지원된다.** 예를 들어서 생성자 자동 주입에서 특정 필드에만 사용해도 된다.
+
+ex)
+
+```java
+//호출 안됨
+@Autowired(required = false)
+public void setNoBean1(Member member) {
+    System.out.println("setNoBean1 = " + member);
+}
+//null 호출
+@Autowired
+public void setNoBean2(@Nullable Member member) {
+    System.out.println("setNoBean2 = " + member);
+}
+//Optional.empty 호출
+@Autowired(required = false)
+public void setNoBean3(Optional<Member> member) {
+    System.out.println("setNoBean3 = " + member);
+}
+//출력결과
+setNoBean2 = null
+setNoBean3 = Optional.empty
+```
+## 조회 빈이 2개 이상 - 문제 발생 -> @Qualifier, @Primary
+
+@Primary, @Qualifier 활용
+* 코드에서 자주 사용하는 메인 데이터베이스의 커넥션을 획득하는 스프링 빈이 있고, 코드에서 특별한 기능으로 가끔 사용하는 서브 데이터베이스의 커넥션을 획득하는 스프링 빈이 있다고 생각해보자. 
+* 메인 데이터베이스의 커넥션을 획득하는 스프링 빈은 @Primary 를 적용해서 조회하는 곳에서 @Qualifier 지정 없이 편리하게 조회하고, 서브 데이터베이스 커넥션 빈을 획득할 때는 @Qualifier 를 지정해서 명시적으로 획득 하는 방식으로 사용하면 코드를 깔끔하게 유지할 수 있다. 
+* 물론 이때 메인 데이터베이스의 스프링 빈을 등록할 때 @Qualifier 를 지정해주는 것은 상관없다.
+
+**우선순위**
+* @Primary 는 기본값 처럼 동작하는 것이고, @Qualifier 는 매우 상세하게 동작한다. 
+* 이런 경우 어떤 것이 우선권을 가져갈까? 
+* 스프링은 자동보다는 수동이, 넒은 범위의 선택권 보다는 좁은 범위의 선택권이 우선 순위가 높다. 
+* 따라서 여기서도 ***@Qualifier 가 우선권이 높다.***
+
+
+## AOP
+
+
+
 
 
 
