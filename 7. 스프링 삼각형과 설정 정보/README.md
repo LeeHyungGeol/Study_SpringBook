@@ -5,6 +5,8 @@
   * POJO(Plain Old Java Objet)를 기반으로 IoC/DI, AOP, PSA라고 하는 스프링의 3대 프로그래밍 모델
 
 ---
+---
+---
 
 ## IoC/DI - 제어의 역전/의존성 주입
 
@@ -369,9 +371,133 @@ setNoBean3 = Optional.empty
 * 따라서 여기서도 ***@Qualifier 가 우선권이 높다.***
 
 
-## AOP
+---
+---
+---
+
+## AOP - Aspect Oriented Programming - 관점 지향 프로그래밍 - 핵심 관심사? 횡단 관심사?
+
+* **스프링 AOP : 로직(Code) 주입**, 스프링 DI : 의존성(new)에 대한 주입
+
+* AOP : 모듈의 핵심 관심사(핵심 비즈니스 로직)와 공통으로 나타나는 로직(횡단 관심사)로 나누어, **핵심 관심이 실행되기 전**, ***공통 로직(Code)을 주입***하는 것
+
+* 코드 = 핵심 관심사 + 횡단 관심사
+  * 핵심 관심사(Core Concern) : 모듈별로 다른 핵심 비즈니스 로직
+  * 횡단 관심사(Cross-Cutting Concern) : 다수의 모듈별로 반복되어 중복해서 나타나는 부분
+  
+* 스프링 AOP의 핵심 3가지
+  * 스프링 AOP는 인터페이스(interface)기반이다.
+  * 스프링 AOP는 프록시(proxy)기반이다.
+  * 스프링 AOP는 런타임(Runtime)기반이다.
+
+* 객체 지향에서 로직(Code)가 있는 곳은 당연히 메서드 안쪽이다.
+* 메서드에 코드를 주입할 수 있는 곳은 총 5가지
+  * @Around : 메서드 전 구역
+  * @Before : 메서드 시작 전
+  * @After : 메서드 시작 후
+  * @AfterReturning : 메서드 정상 종료 후
+  * @Afterthrowing : 메서드에서 예외가 발생하면서 종료된 후
+
+ex) memberController, Service, Repository에 시간 측정 로직을 공통으로 추가하고 싶을 때
+
+**AOP 적용 전**
+
+![image](https://user-images.githubusercontent.com/56071088/110094077-c0746f80-7dde-11eb-8803-d9fea1c527c7.png)
 
 
+```java
+
+@Transactional
+public class MemberService {
+    /**
+     * 회원가입
+     */
+    public Long join(Member member) {
+        long start = System.currentTimeMillis();
+        try {
+            validateDuplicateMember(member); //중복 회원 검증
+            memberRepository.save(member);
+            return member.getId();
+        } finally {
+            long finish = System.currentTimeMillis();
+            long timeMs = finish - start;
+            System.out.println("join " + timeMs + "ms");
+        }
+    }
+    /**
+     * 전체 회원 조회
+     */
+    public List<Member> findMembers() {
+        long start = System.currentTimeMillis();
+        try {
+            return memberRepository.findAll();
+        } finally {
+            long finish = System.currentTimeMillis();
+            long timeMs = finish - start;
+            System.out.println("findMembers " + timeMs + "ms");
+        }
+    }
+}
+
+```
+
+**AOP 적용 후**
+
+![image](https://user-images.githubusercontent.com/56071088/110095512-5a88e780-7de0-11eb-8750-691d44e27e66.png)
+
+```java
+
+package hello.hellospring.aop;
+
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.springframework.stereotype.Component;
+
+@Component
+@Aspect
+public class TimeTraceAop {
+    
+    @Around("execution(* hello.hellospring..*(..))")
+    public Object execute(ProceedingJoinPoint joinPoint) throws Throwable {
+        
+        long start = System.currentTimeMillis();
+        System.out.println("START: " + joinPoint.toString());
+        
+        try {
+            return joinPoint.proceed();
+        } finally {
+            long finish = System.currentTimeMillis();
+            long timeMs = finish - start;
+            System.out.println("END: " + joinPoint.toString()+ " " + timeMs + "ms");
+        }
+    }
+}
+
+```
+
+## AOP 용어 정리
+
+| 용어      | 의미                     |
+| -- | -- |
+| Aspect    | Advisor의 집합체! -> Advice들 + Pointcut들       |
+| Advisor   | 어디서, 언제, 무엇을! -> 한 개의 Advice + 한 개의 Pointcut|
+| Advice    | 언제, 무엇을!            |
+| JoinPoint | 연결 가능한 지점!        |
+| Pointcut  | Aspect 적용 위치 지정자! -> 어디에! |
+
+* Pointcut - ***Aspect 적용 위치 지정자***
+  * 위의 예시에서 *( * hello.hellospring..*(..))* 부분이다.
+  
+  * @Around("execution(* hello.hellospring..*(..))")의 의미
+    * 지금 선언하고 있는 메서드(public Object execute)를 * hello.hellospring..*(..))"가 실행되는 전 구역 동안(@Around)에 실행하라는 의미
+    * **public Object execute**는 ***횡단 관심사를 실행하는 메서드***이다.
+  
+  * **Pointcut** : **횡단 관심사를 적용할 타깃 메서드를 선택하는 지시자**(메서드 선택 필터) -> **타깃 클래스의 타깃 메서드 지정자**
+  
+  * 다른 AOP 프레임워크에서는 메서드 뿐만 아니라 속성 등에도 Aspect를 적용할 수 있기에 포괄적으로 ***Aspect 적용 위치 지정자*** 라고 한다.
+
+* JoinPoint - **연결 가능한 지점**
 
 
 
