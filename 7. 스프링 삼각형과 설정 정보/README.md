@@ -496,12 +496,50 @@ public class TimeTraceAop {
   * **Pointcut** : **횡단 관심사를 적용할 타깃 메서드를 선택하는 지시자**(메서드 선택 필터) -> **타깃 클래스의 타깃 메서드 지정자**
   
   * 다른 AOP 프레임워크에서는 메서드 뿐만 아니라 속성 등에도 Aspect를 적용할 수 있기에 포괄적으로 ***Aspect 적용 위치 지정자*** 라고 한다.
+  
+  * [접근 제한자] 리턴 타입 [패키지&클래스] 메소드이름(파라미터) [throws 예외] // []는 생략가능을 의미 
 
 * JoinPoint - **연결 가능한 지점**
+  
+  * ***JoinPoint : Aspect 적용이 가능한 모든 지점***
+  
+  * 스프링 AOP에서 JoinPoint란 스프링이 관리하는 모든 빈(Bean)의 모든 메서드
+  
+  * 예시에서 ProceedingJoinPoint joinPoint에 해당한다.
+    * 광의의 JoinPoint : Aspect 적용이 가능한 모든 지점
+    * 협의의 JoinPoint : 호출된 객체의 메서드 
 
+* Advice - **언제, 무엇을!**
+  
+  * Advice : ***Pointcut에 언제, 무엇을 적용할지 정의한 메서드***이다.
+  
+  * Advice를 타깃 객체의 타깃 메서드에 적용될 부가 기능이라고 표현한 책도 있다. 
+  
+  * 예시에서 @Around
+    public Object execute(ProceedingJoinPoint joinPoint) throws Throwable를 의미한다. -> Pointcut이 시작되는 전 구역(@Around)에 execute() 메서드를 실행하라는 의미
 
+* Aspect - **Advisor들의 집합체!**
+  
+  * ***Aspect = Advice들 + Pointcut들***
+  
+  * Advice : [언제, 무엇을], Pointcut : [어디에]
+  * Aspect : [언제, 어디에, 무엇을]
 
+* Advisor - **언제, 어디에, 무엇을!**
+  
+  * ***Advisor = 한 개의 Advice + 한 개의 Pointcut***
+  
+  * Advisor는 스프링 AOP에서만 사용하는 용어, **다른 AOP 프레임워크에서는 사용하지 않는다.**
+  * ***스프링 버전이 올라가면서 이제는 사용하지 말라고 권고하는 기능이기도 하다.***
+  * Aspect가 나왔기 때문에, 하나의 Advice와 하나의 Pointcut만을 결합하는 Advisor를 사용할 필요가 없어졌기 때문이다.   
 
+---
+---
+---
+
+## PSA - 일관성 있는 서비스 추상화 - Portable Service Abstraction
+
+Spring 프레임워크에서는 서비스 추상화를 위해 다양한 어댑터를 제공하고있다. 예를 들어, OXM(Object XML Mapping:객체와 XML매핑) 기술만 하더라도 Castor, JAXB, XMLBeans, JiBX등 다양한 기술이 있고, 이 다양한 기술들이 제공하는 API는 모두 제각각이다. 스프링은 제각각인 API를 위한 어댑터를 제공함으로써 실제로 어떤 OXM 기술을 쓰든 일관된 방식으로 코드를 작성할 수 있게한다. 또한 기존의 OXM기술에서 다른 OXM기술로 변경할 때 큰 변화 없이 세부 기술을 교체해서 사용할 수 있게 해주고있다. 이처럼 서비스 추상화를 해주면서 그것도 일관성 있는 방식을 제공한다고 해서 이를 PSA(일관성 있는 서비스 추상화)라고 한다. Spring은 OXM뿐 아니라, ORM, 캐시, 트랜잭션등 여러 기술에대해 PSA를 제공하고 있다.
 
 
 
