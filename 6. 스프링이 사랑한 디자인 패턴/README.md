@@ -396,13 +396,78 @@
 
 - 알고리즘의 구조를 메소드에 정의하고, 하위 클래스에서 알고리즘 구조의 변경없이 알고리즘을 재정의 하는 패턴
 
-- 상위 클래스에 공통 로직을 수행하는 템플릿 메서드와, 하위 클래스에 오버라이딩을 강제하는 추상 메서드 또는 선택적 오버라이딩이 가능한 Hook 메소드를 두는 패턴
+- **상위 클래스**에 **공통 로직을 수행하는 템플릿 메서드**와 하위 클래스에 **오버라이딩을 강제하는 추상 메서드** 또는 **선택적 오버라이딩이 가능한 Hook 메소드**를 두는 패턴
 
+* 전체적으로는 동일하면서 부분적으로는 다른 구문으로 구성된 메서드의 ***코드 중복을 최소화 할 때 유용하다.*** 
+
+* 다른 관점에서 보면 동일한 기능을 상위 클래스에서 정의하면서, 확장/변화가 필요한 부분만 서브 클래스에서 구현할 수 있도록 한다. 
+
+
+EX 1)
+```java
+public abstract class CaffeineBeverageWithHook {
+    void final prepareRecipe() { // 템플릿 메서드(Template Method)
+        boilWater();
+        brew();
+        pourInCup();
+        if ( customerWantsCondiments() ) {
+            addcondiments();
+        }
+    }
+
+    abstract void brew(); // 추상 메서드(Abstract Method)
+
+    abstract void addcondiments(); // 추상 메서드(Abstract Method)
+
+    void boilWater() {
+        System.out.println("물 끓이는 중");
+    }
+
+    void pourInCup() {
+        System.out.println("컵에 따르는 중");
+    }
+    
+    // 후크 메서드(Hook Method)
+    boolean customerWantsCondiments() {    //이 메소드는 서브클래스에서 필요에 따라 오버라이드 할수 있는 메소드이므로 후크(Hook)이다.
+    return true;                                   
+    }
+}
+
+public class CoffeeWithHook extends CaffeineBeverageWithHook {
+    @Override
+    void brew() {
+        System.out.println("필터를 통해 커피를 우려내는 중");
+        }
+
+    @Override
+    public void addCondiments() {
+        System.out.println("설탕과 우유를 추가하는 중");
+    }
+    
+    @Override
+    public boolean customerWantsCondiments() {
+        String answer = getUserInput();
+
+        if( answer.toLowerCase().startWith("y")) {
+            return true;
+        } else { 
+            return false;
+        }
+    }
+    
+    private String getUserInput() {
+        // 입력받는 로직
+    }
+}
+```
+
+EX 2)
 - Template Method클래스 다이어그램
 
   ![Template Method클래스 다이어그램](https://user-images.githubusercontent.com/48685242/108399765-d2420880-725d-11eb-8a11-22f451601da1.jpg)
 
 
+참고: https://jusungpark.tistory.com/24 [정리정리정리], https://www.crocus.co.kr/1531 [Crocus]
 
 
 
