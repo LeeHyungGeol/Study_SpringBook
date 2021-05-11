@@ -17,7 +17,7 @@
 * **DI(Dependency Injection)** 는 ***외부에 있는 의존 대상을 주입하는 것***이다.
 
 
-## 1. 전략 패턴(Strategy Pattern) , 관심사의 분리(SoC)(사용영역과 구성영역) -> AppConfig
+## 1. 관심사의 분리(SoC)(사용영역과 구성영역) -> AppConfig
 
 ```java
 public class MemberServiceImpl implements MemberService{
