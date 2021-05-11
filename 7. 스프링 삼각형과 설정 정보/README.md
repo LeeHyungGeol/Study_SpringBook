@@ -93,10 +93,6 @@ public class OrderApp {
 ```
 
 * 관심사의 분리(SoC)를 이용하여 애플리케이션의 동작 방식을 사용 영역과 구성 영역으로 나눈다.
-* 여기서 전략 패턴(Strategy Pattern)이 사용된다.
-    * **전략 객체** : 전략 메서드를 가진 전략 객체 : **memberRepository, orderService, discountPolicy**
-    * **컨텍스트** : 전략 객체를 사용하는 컨텍스트 : **return new Object_Instance_Name()**
-    * **클라이언트** : 전략 객체를 생성해 컨텍스트에 주입 : ***AppConfig***
 
 
 ## 2. IoC/DI 그리고 컨테이너
